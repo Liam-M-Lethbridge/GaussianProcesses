@@ -12,7 +12,7 @@ class KernelFunction(ABC):
     def __init__(self):
         pass
 
-    def __call__(self, x: np.ndarray, y: Union[np.ndarray, None] = None):
+    def __call__(self, x: np.ndarray, y: Union[np.ndarray, None] = None) -> np.ndarray:
         """Calling this kernel class will calculate the kernel values.
         Args:
             x: first numpy array.
@@ -20,11 +20,13 @@ class KernelFunction(ABC):
         """
         if y is None:
             y = x
+        x = np.atleast_1d(x)
+        y = np.atleast_1d(y)
         return self.kernel(x,y)
         
     @abstractmethod
-    def kernel(self, x: np.ndarray, y:np.ndarray):
-        return 0
+    def kernel(self, x: np.ndarray, y:np.ndarray) -> np.array:
+        return np.array([0])
     
 
 class RadialBasisFunction(KernelFunction):

@@ -1,0 +1,14 @@
+{
+  "name": "GaussianProcesses",
+  "dockerfile": "../Dockerfile",
+  "workspaceFolder": "/app",
+  "settings": {
+    "python.defaultInterpreterPath": "/usr/local/bin/python",
+    "python.analysis.extraPaths": ["/app"],
+    "python.analysis.diagnosticMode": "workspace"
+  },
+  "extensions": [
+    "ms-python.python",
+    "ms-python.vscode-pylance"
+  ]
+}

@@ -26,7 +26,7 @@ def visualiseKernel(kernel:KernelFunction):
 
     # fig.suptitle(f"σ = {kernel.sigma} Lengthscsale = {kernel.lengthscale}", fontsize=16)
     fig.tight_layout()
-    fig.savefig(f"{kernel.kernType}.png")
+    fig.savefig(f"figures/{kernel.kernType}.png")
     # plt.show()
 
 
@@ -62,7 +62,7 @@ def showAll():
         axes[0][i].set_yticks([])
     axes[0][0].set_ylabel("Kernel output", fontsize = 12, fontfamily = "serif")
 
-    fig.savefig("Comparisons.png")    
+    fig.savefig("figures/Comparisons.png")    
 
 
 def testHypes():
@@ -92,7 +92,7 @@ def testHypes():
         axes[0][i].set_yticks([])
     axes[0][0].set_ylabel("Kernel output", fontsize = 12, fontfamily = "serif")
 
-    fig.savefig("hyperparams.png")   
+    fig.savefig("figures/hyperparams.png")   
 
 if __name__ == "__main__":
     # rbf = RadialBasisFunction(lengthscale=5)
