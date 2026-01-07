@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 
 
 class GaussianProcess():
-    def __init__(self, kernelFunction: KernelFunction, noise_variance = 1):
+    def __init__(self, kernelFunction: KernelFunction, noise_variance = 0.01):
         self.kernelFunction = kernelFunction
         self.x = None
         self.y = None
