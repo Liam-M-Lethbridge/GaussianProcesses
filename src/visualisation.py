@@ -1,5 +1,6 @@
 from src.kernelFuncts import RadialBasisFunction, KernelFunction, RationalQuadraticFunction, PeriodicFunction, CompositeKernel, LinearFunction
 import matplotlib.pyplot as plt
+from typing import Union
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from src.GaussianProcess import GaussianProcess
@@ -110,25 +111,6 @@ def testHypes():
         fixTickParams(axis, index)
     fig.savefig("figures/hyperparams.png")   
 
-def showGPLengthscales():
-    fig, axes = plt.subplots(1,3, figsize = (18,8))
-    x = np.linspace(0,20,250)
-    y = generateSinData(x, 5, 0.1)
-    gps = [GaussianProcess(RadialBasisFunction(lengthscale=0.1)), GaussianProcess(RadialBasisFunction(lengthscale=1)), GaussianProcess(RadialBasisFunction(lengthscale=10))]
-    for i in range(3):
-        gps[i].observeData(x,y)
-        means, variances = gps[i].inference(x)
-        axes[i].scatter(x,y, s=4, marker="x", c="black")
-        axes[i].plot(x, means)
-        axes[i].fill_between(x, means-np.diagonal(variances)*2, means+np.diagonal(variances)*2, alpha = 0.1, color = "b")
-        axes[i].set_xticks([])
-        axes[i].set_yticks([])
-    for index, axis in enumerate(axes):
-        fixTickParams(axis, index)
-        axis.set_xlim(np.min(x),np.max(x))
-    fig.tight_layout()
-    fig.savefig("figures/lengthscales.png")
-
 
 def priorDistSample(gp: GaussianProcess, nsamples: int = 3, fname="figures/priorVsPosterior.png"):
     """This function plots and samples functions from the means and covariance.
@@ -164,6 +146,10 @@ def priorDistSample(gp: GaussianProcess, nsamples: int = 3, fname="figures/prior
         axis.set_ylim(-3.5,3.5)
         axis.set_xlim(np.min(x),np.max(x))
         axis.set_xticks([])
+        axis.set_xlabel("x", fontsize = 20, fontfamily = "serif")
+
+    axes[0].set_ylabel("f(x)", fontsize = 20, fontfamily = "serif")
+
 
     fig.tight_layout()
 
@@ -179,8 +165,8 @@ def GPComps(gps: list[GaussianProcess], fname:str, nsamples = 3):
     for index, gp in enumerate(gps):
         gp.observeData(observedX, observedY)
         kernel = gp.kernelFunction
-        x = np.linspace(0,10,1000)
-        means = np.zeros(1000)
+        x = np.linspace(0,10,300)
+        means = np.zeros(300)
         kernelMatrix = kernel(x)
         postMeans,PostVariance = gp.inference(x)
         axes1[index].plot(x,means)
@@ -200,7 +186,8 @@ def GPComps(gps: list[GaussianProcess], fname:str, nsamples = 3):
         axis.set_yticks([-2,0,2])
         axis.set_xticks([])
         axis.set_xlim(np.min(x),np.max(x))
-
+        axis.set_xlabel("x", fontsize = 20, fontfamily = "serif")
+    axes1[0].set_ylabel("f(x)", fontsize = 20, fontfamily = "serif")
 
     for axis in axes2:
         axis.tick_params(direction = "in", labelsize=15)
@@ -208,6 +195,9 @@ def GPComps(gps: list[GaussianProcess], fname:str, nsamples = 3):
         axis.set_yticks([-2,0,2])
         axis.set_xticks([])
         axis.set_xlim(np.min(x),np.max(x))
+        axis.set_xlabel("x", fontsize = 20, fontfamily = "serif")
+    axes2[0].set_ylabel("f(x)", fontsize = 20, fontfamily = "serif")
+
     fig1.tight_layout()
     fig2.tight_layout()
 
@@ -215,6 +205,63 @@ def GPComps(gps: list[GaussianProcess], fname:str, nsamples = 3):
     fig2.savefig(f"figures/{fname}Posteriors.png")
 
     
+def visualiseDistribution(gp: GaussianProcess):
+    fig, axes = plt.subplots(ncols=3, nrows=2, figsize = (18,12), sharey=True)
+
+    # create a big axis for the GP posterior
+    gs = axes[0,0].get_gridspec()
+    for axis in axes[0]:
+        axis.remove()
+    axis = fig.add_subplot(gs[0, :])
+
+    # plot the GP posterior
+    observedX = [2,3,6, 4.8]
+    observedY = [-0.5,0.5,2,1]
+    gp.observeData(observedX, observedY)
+
+    inspectionPoints = [1.5,5.0,8.5]
+
+    x = np.linspace(0,10,200)
+    means, kernelMatrix = gp.inference(x)
+    axis.plot(x,means)
+    axis.scatter(gp.x, gp.y, marker = "x", c="black", s=40, label="Observed data")
+    axis.fill_between(x, means-kernelMatrix.diagonal(), means+kernelMatrix.diagonal(), alpha = 0.1)
+    axis.tick_params(direction = "in", labelsize=15)
+    axis.set_ylim(-3.5,3.5)
+    axis.set_ylabel("f(x)", fontsize = 20, fontfamily = "serif")
+    axis.set_xlabel("x", fontsize = 20, fontfamily = "serif")
+    axis.set_yticks([-2,0,2])
+    axis.set_xticks(inspectionPoints)
+    axis.set_xlim(np.min(x),np.max(x))
+    fixTickParams(axis,0)
+
+    for index, inspectionPoint in enumerate(inspectionPoints):
+        axis.plot([inspectionPoint, inspectionPoint], [-4, 4], color = "black",linestyle = "dashed")
+        mean, var = gp.inference(inspectionPoint)
+        x = np.linspace(mean-4,mean+4,200)
+        y = pdf(x, mean, var)
+        axes[1,index].plot(x,y.flatten())
+        axes[1,index].fill_between(x.flatten(),y.flatten(), 0, alpha=0.1)
+        axes[1,index].set_xticks([-4,-2,0,2,4])
+        axes[1,index].set_xlim([np.min(x), np.max(x)])
+        axes[1,index].set_xlabel(f"f({inspectionPoint})", fontsize = 20, fontfamily = "serif")
+        fixTickParams(axes[1,index], index)
+
+
+    axes[1,0].set_ylabel("Probablity density", fontsize = 20, fontfamily = "serif")
+
+    axes[1,0].set_ylim(0,3)
+    axes[1,0].set_yticks([0,1,2,3])
+    # fig.tight_layout()
+    fig.savefig("figures/distribution.png")
+
+def pdf(x: Union[float,np.ndarray], mean: float, variance: float):
+    """Function provides probability density function for x."""
+    std = np.sqrt(variance)
+    y_out = 1/(std * np.sqrt(2 * np.pi)) * np.exp( - (x - mean)**2 / (2 * std**2))
+    return y_out
+
+
 def fixTickParams(axis, index):
     """This function fixes axis for consistency."""
     axis.tick_params(direction = "in", labelsize=15)
@@ -224,7 +271,7 @@ def fixTickParams(axis, index):
 
 
 if __name__ == "__main__":
-    # rbf = RadialBasisFunction(lengthscale=1)
+    rbf = RadialBasisFunction(lengthscale=1)
     # rq = RationalQuadraticFunction(alpha=1)
     # p = PeriodicFunction()
     # lin = LinearFunction(sigmaV=1/36)
@@ -237,17 +284,18 @@ if __name__ == "__main__":
     # showAll()
     # testHypes()
     # showGPLengthscales()
-    # gp = GaussianProcess(RadialBasisFunction(lengthscale=1, sigma=1), noise_variance=0.01)
-    # priorDistSample(gp, nsamples=5)
-    # gps = [
-    #     GaussianProcess(RadialBasisFunction(), noise_variance=0.01), GaussianProcess(RadialBasisFunction(), noise_variance=0.1), GaussianProcess(RadialBasisFunction(), noise_variance=1)
-    # ]
-    # GPComps(gps, "noiseVariance", nsamples=4)
-    # gps = [
-    #     GaussianProcess(RadialBasisFunction(sigma=0.5)), GaussianProcess(RadialBasisFunction(sigma=1)), GaussianProcess(RadialBasisFunction(sigma=1.4))
-    # ]
-    # GPComps(gps, "sigmas", nsamples=4)
+    gp = GaussianProcess(RadialBasisFunction(lengthscale=1, sigma=1), noise_variance=0.01)
+    priorDistSample(gp, nsamples=5)
+    gps = [
+        GaussianProcess(RadialBasisFunction(), noise_variance=0.01), GaussianProcess(RadialBasisFunction(), noise_variance=0.1), GaussianProcess(RadialBasisFunction(), noise_variance=1)
+    ]
+    GPComps(gps, "noiseVariance", nsamples=4)
+    gps = [
+        GaussianProcess(RadialBasisFunction(sigma=0.5)), GaussianProcess(RadialBasisFunction(sigma=1)), GaussianProcess(RadialBasisFunction(sigma=1.4))
+    ]
+    GPComps(gps, "sigmas", nsamples=4)
     gps = [
         GaussianProcess(RadialBasisFunction(lengthscale=0.1)), GaussianProcess(RadialBasisFunction(lengthscale=0.5)), GaussianProcess(RadialBasisFunction(lengthscale=2))
     ]
     GPComps(gps, "lengthscales", nsamples=3)
+    visualiseDistribution(GaussianProcess(rbf))
