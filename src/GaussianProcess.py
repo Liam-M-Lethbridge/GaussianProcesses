@@ -1,6 +1,6 @@
 """This file is for the Gaussain process."""
-from src.kernelFuncts import KernelFunction, RadialBasisFunction
-from src.data import generateLinearData, generateSinData
+from kernelFuncts import KernelFunction, RadialBasisFunction
+from data import generateLinearData, generateSinData
 import numpy as np
 from typing import Union
 import matplotlib.pyplot as plt

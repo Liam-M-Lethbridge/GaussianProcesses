@@ -73,7 +73,7 @@ class PeriodicFunction(KernelFunction):
         sigma (float): the variance of the kernel.
         lengthscale (float): the lengthscale of the kernel. 
     """
-    def __init__(self, sigma: float = 1.0, lengthscale: float = 1.0, period: float = 2):
+    def __init__(self, sigma: float = 1.0, lengthscale: float = 0.5, period: float = 2):
         self.kernType = "Periodic"
         self.sigma = sigma
         self.lengthscale = lengthscale

@@ -1,10 +1,10 @@
-from src.kernelFuncts import RadialBasisFunction, KernelFunction, RationalQuadraticFunction, PeriodicFunction, CompositeKernel, LinearFunction
+from kernelFuncts import RadialBasisFunction, KernelFunction, RationalQuadraticFunction, PeriodicFunction, CompositeKernel, LinearFunction
 import matplotlib.pyplot as plt
 from typing import Union
 import numpy as np
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from src.GaussianProcess import GaussianProcess
-from src.data import generateLinearData, generateSinData
+from GaussianProcess import GaussianProcess
+from data import generateLinearData, generateSinData
 
 alphabet = "abcdefghi"
 
@@ -19,15 +19,15 @@ def visualiseKernel(kernel:KernelFunction):
     # first axis is graph of values
     axes[0].plot(np.linspace(-5,5,1000), values)
     axes[0].set_box_aspect(1)
-    axes[0].set_xlabel("(x-y)", fontsize = 20, fontfamily = "serif")
-    axes[0].set_ylabel("Kernel output", fontsize = 20, fontfamily = "serif")
+    axes[0].set_xlabel("(x-x')", fontsize = 30, fontfamily = "serif")
+    axes[0].set_ylabel("Kernel output", fontsize = 30, fontfamily = "serif")
     
     # second axis is visual pattern
     im = axes[1].imshow(matrixOfValues, cmap = "magma", vmin = 0, vmax = 1)
     axes[1].set_xticks([])
     axes[1].set_yticks([])
-    axes[1].set_xlabel("x", fontsize = 20, fontfamily = "serif")
-    axes[1].set_ylabel("x'   ", fontsize = 20, fontfamily = "serif", rotation=0)
+    axes[1].set_xlabel("x", fontsize = 30, fontfamily = "serif")
+    axes[1].set_ylabel("x'   ", fontsize = 30, fontfamily = "serif", rotation=0)
     divider = make_axes_locatable(axes[1])
     cax = divider.append_axes('right', size='5%', pad=0.05)
     cbar = fig.colorbar(im, cax=cax, orientation='vertical')
@@ -35,9 +35,11 @@ def visualiseKernel(kernel:KernelFunction):
     for index, axis in enumerate(axes):
         fixTickParams(axis, index)
     axes[0].set_xlim(np.min(x),np.max(x))
+    axes[0].set_ylim(-0.05, 1.05)
+    axes[0].set_yticks([0,0.5,1])
 
     fig.tight_layout()
-    fig.savefig(f"figures/{kernel.kernType.replace(" ", "")}.png")
+    fig.savefig(f"figures/{kernel.kernType.replace(' ', '')}.png")
     # plt.show()
 
 
@@ -272,30 +274,30 @@ def fixTickParams(axis, index):
 
 if __name__ == "__main__":
     rbf = RadialBasisFunction(lengthscale=1)
-    # rq = RationalQuadraticFunction(alpha=1)
-    # p = PeriodicFunction()
-    # lin = LinearFunction(sigmaV=1/36)
-    # comp = CompositeKernel(p, RadialBasisFunction(lengthscale=4), "x")
-    # visualiseKernel(rbf)
-    # visualiseKernel(rq)
-    # visualiseKernel(p)
-    # visualiseKernel(lin)
-    # visualiseKernel(comp)
+    rq = RationalQuadraticFunction(alpha=1)
+    p = PeriodicFunction(lengthscale=0.7, period=4)
+    lin = LinearFunction(sigmaV=1/36)
+    comp = CompositeKernel(p, RadialBasisFunction(lengthscale=4), "x")
+    visualiseKernel(rbf)
+    visualiseKernel(rq)
+    visualiseKernel(p)
+    visualiseKernel(lin)
+    visualiseKernel(comp)
     # showAll()
     # testHypes()
     # showGPLengthscales()
-    gp = GaussianProcess(RadialBasisFunction(lengthscale=1, sigma=1), noise_variance=0.01)
-    priorDistSample(gp, nsamples=5)
-    gps = [
-        GaussianProcess(RadialBasisFunction(), noise_variance=0.01), GaussianProcess(RadialBasisFunction(), noise_variance=0.1), GaussianProcess(RadialBasisFunction(), noise_variance=1)
-    ]
-    GPComps(gps, "noiseVariance", nsamples=4)
-    gps = [
-        GaussianProcess(RadialBasisFunction(sigma=0.5)), GaussianProcess(RadialBasisFunction(sigma=1)), GaussianProcess(RadialBasisFunction(sigma=1.4))
-    ]
-    GPComps(gps, "sigmas", nsamples=4)
-    gps = [
-        GaussianProcess(RadialBasisFunction(lengthscale=0.1)), GaussianProcess(RadialBasisFunction(lengthscale=0.5)), GaussianProcess(RadialBasisFunction(lengthscale=2))
-    ]
-    GPComps(gps, "lengthscales", nsamples=3)
-    visualiseDistribution(GaussianProcess(rbf))
+    # gp = GaussianProcess(RadialBasisFunction(lengthscale=1, sigma=1), noise_variance=0.01)
+    # priorDistSample(gp, nsamples=5)
+    # gps = [
+    #     GaussianProcess(RadialBasisFunction(), noise_variance=0.01), GaussianProcess(RadialBasisFunction(), noise_variance=0.1), GaussianProcess(RadialBasisFunction(), noise_variance=1)
+    # ]
+    # GPComps(gps, "noiseVariance", nsamples=4)
+    # gps = [
+    #     GaussianProcess(RadialBasisFunction(sigma=0.5)), GaussianProcess(RadialBasisFunction(sigma=1)), GaussianProcess(RadialBasisFunction(sigma=1.4))
+    # ]
+    # GPComps(gps, "sigmas", nsamples=4)
+    # gps = [
+    #     GaussianProcess(RadialBasisFunction(lengthscale=0.1)), GaussianProcess(RadialBasisFunction(lengthscale=0.5)), GaussianProcess(RadialBasisFunction(lengthscale=2))
+    # ]
+    # GPComps(gps, "lengthscales", nsamples=3)
+    # visualiseDistribution(GaussianProcess(rbf))
