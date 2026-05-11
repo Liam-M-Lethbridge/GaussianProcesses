@@ -270,34 +270,84 @@ def fixTickParams(axis, index):
     # axis.set_title(f"({alphabet[index]})", size = 30, fontfamily = "serif", fontweight = "bold")
 
     
+def nice_gp_figure(gp: GaussianProcess, n_lines=10, show_data = False) -> None:
+    """This function provides a nice visual for a Gaussian process.
+    Args:
+        gp: the Gaussian process.
+        n_lines: the number of lines to compute.
+        show_data: when True, the data points are shown.
+    """
+    x = np.array([1,2,3,3.1,3.2,3.3,4,5,6, 8])
+    y = generateSinData(x, 7, 0.1)
+    gp.observeData(x,y)
+    fig, ax = plt.subplots(figsize = (30,20))
+    x2 = np.linspace(0,10,300)
+
+    m, v = gp.inference(x2)
+    kernel_matrix = gp.kernelFunction(x2)
+    for i in range(n_lines):
+        f = np.random.multivariate_normal(m, kernel_matrix)
+        ax.plot(x2, f, linewidth=2, c="blue", alpha=0.3)
+    ax.set_xlim(0,10)
+    ax.set_xticks([])
+    ax.set_yticks([])
+
+    if show_data:
+        ax.scatter(x,y)
+
+    fig.tight_layout()
+    fig.savefig("figures/nice_Gaussian.png")
+
+def gp_vs_svgp(gp: GaussianProcess):
+    """This function shows us the difference in using a lot data points vs using just a few.
+    Args:
+        gp: the gaussian process.
+    """
+
+    fig, axes = plt.subplots(ncols = 2, figsize = (40,20))
+
+    x = np.linspace(0,10,300)
+    # big data
+    x1 = np.random.uniform(0,10,5000)
+    y1 = generateSinData(x1, 7, 0.2)
+    gp.observeData(x1,y1)
+    
+    m, v = gp.inference(x)
+    kernel_matrix = gp.kernelFunction(x)
+
+
+    axes[0].set_xlim(0,10)
+    axes[0].set_xticks([])
+    axes[0].set_yticks([])
+
+    axes[0].scatter(x1,y1, alpha=0.5, s=3, c="b")
+
+    axes[0].plot(x,m)
+    axes[0].fill_between(x, m-kernel_matrix.diagonal(), m+kernel_matrix.diagonal(), alpha = 0.1)
+
+
+    # small data
+    x2 = np.linspace(0,10,200)
+    y2 = generateSinData(x2, 7, 0.2)
+    gp.observeData(x2,y2)
+
+    m, v = gp.inference(x)
+    kernel_matrix = gp.kernelFunction(x)
+
+    axes[1].plot(x,m)
+    axes[1].fill_between(x, m-kernel_matrix.diagonal(), m+kernel_matrix.diagonal(), alpha = 0.1)
+
+    axes[1].set_xlim(0,10)
+    axes[1].set_xticks([])
+    axes[1].set_yticks([])
+
+    axes[1].scatter(x2,y2, alpha=0.5, s=3, c="b")
+
+    fig.tight_layout()
+    fig.savefig("figures/gp_vs_svgp.png")
 
 
 if __name__ == "__main__":
-    rbf = RadialBasisFunction(lengthscale=1)
-    rq = RationalQuadraticFunction(alpha=1)
-    p = PeriodicFunction(lengthscale=0.7, period=4)
-    lin = LinearFunction(sigmaV=1/36)
-    comp = CompositeKernel(p, RadialBasisFunction(lengthscale=4), "x")
-    visualiseKernel(rbf)
-    visualiseKernel(rq)
-    visualiseKernel(p)
-    visualiseKernel(lin)
-    visualiseKernel(comp)
-    # showAll()
-    # testHypes()
-    # showGPLengthscales()
-    # gp = GaussianProcess(RadialBasisFunction(lengthscale=1, sigma=1), noise_variance=0.01)
-    # priorDistSample(gp, nsamples=5)
-    # gps = [
-    #     GaussianProcess(RadialBasisFunction(), noise_variance=0.01), GaussianProcess(RadialBasisFunction(), noise_variance=0.1), GaussianProcess(RadialBasisFunction(), noise_variance=1)
-    # ]
-    # GPComps(gps, "noiseVariance", nsamples=4)
-    # gps = [
-    #     GaussianProcess(RadialBasisFunction(sigma=0.5)), GaussianProcess(RadialBasisFunction(sigma=1)), GaussianProcess(RadialBasisFunction(sigma=1.4))
-    # ]
-    # GPComps(gps, "sigmas", nsamples=4)
-    # gps = [
-    #     GaussianProcess(RadialBasisFunction(lengthscale=0.1)), GaussianProcess(RadialBasisFunction(lengthscale=0.5)), GaussianProcess(RadialBasisFunction(lengthscale=2))
-    # ]
-    # GPComps(gps, "lengthscales", nsamples=3)
-    # visualiseDistribution(GaussianProcess(rbf))
+    rbf = RadialBasisFunction(lengthscale=0.3, sigma=0.05)
+    gp = GaussianProcess(rbf)
+    gp_vs_svgp(gp)
